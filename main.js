@@ -23,6 +23,8 @@ define(function (require, exports, module) {
         end,
         isSelection = false;
 
+    var settings = JSON.parse(require("text!settings.json"));
+
     // Helper function that chains a series of promise-returning
     // functions together via their done callbacks.
     function chain() {
@@ -78,10 +80,15 @@ define(function (require, exports, module) {
     
     function sortCSS(cssToSort) {
         var path        = ExtensionUtils.getModulePath(module, "csscomb/call_string.php"),
-            order       = '_',
-            sortPromise = nodeConnection.domains.csscomb.runCommand(path, cssToSort, order, function (css) {
-                sortPromise.resolve(css);
-            });
+            order = ' ';
+
+        if (settings.custom_sort_order) {
+            order = JSON.stringify(settings.sort_order);
+        }
+
+        var sortPromise = nodeConnection.domains.csscomb.runCommand(path, cssToSort, order, function (css) {
+            sortPromise.resolve(css);
+        });
 
         sortPromise.fail(function (err) {
             console.error("failed to run csscomb domain", err);

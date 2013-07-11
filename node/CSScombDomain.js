@@ -28,7 +28,6 @@
         proc.on('close', function (code) {
             // console.log('output', output);
             console.log('child process exited with code ' + code);
-            proc.stdin.end();
             cb_wtf(undefined, output);
         });
     }
