@@ -17,9 +17,10 @@ define(function (require, exports, module) {
         Menus           = brackets.getModule("command/Menus"),
         COMMAND_ID = "csscomb.csscomb";
     
-    var settings = JSON.parse(require("text!settings.json"));
     var nodeConnection;
-    var formattedText;
+    var sortedCSS;
+    var isSelection = false;
+    var start, end;
 
     // Helper function that chains a series of promise-returning
     // functions together via their done callbacks.
@@ -38,7 +39,7 @@ define(function (require, exports, module) {
     function connect() {
         var connectionPromise = nodeConnection.connect(true);
         connectionPromise.fail(function () {
-            console.error("[brackets-simple-node] failed to connect to node");
+            console.error("failed to connect to node");
         });
         return connectionPromise;
     }
@@ -56,15 +57,37 @@ define(function (require, exports, module) {
         return loadPromise;
     }
 
-    function sortCSS(css) {
-        var sortPromise = nodeConnection.domains.csscomb.runCommand(css);
+    function replaceCSS(css) {
+        var editor = EditorManager.getCurrentFullEditor();
+        var doc = DocumentManager.getCurrentDocument();
+        var cursor = editor.getCursorPos();
+        var scroll = editor.getScrollPos();
+
+        doc.batchOperation(function () {
+            if (isSelection) {
+                doc.replaceRange(css, start, end);
+            } else {
+                doc.setText(css);
+            }
+            editor.setCursorPos(cursor);
+            editor.setScrollPos(scroll.x, scroll.y);
+        });
+        console.log('csscomb replace finished');
+    }
+    
+    function sortCSS(cssToSort) {
+        var path = ExtensionUtils.getModulePath(module, "csscomb/call_string.php");
+        var order = '_';
+        var sortPromise = nodeConnection.domains.csscomb.runCommand(path, cssToSort, order, function (css) {
+            sortPromise.resolve(css);
+        });
 
         sortPromise.fail(function (err) {
-            console.error("[brackets-simple-node] failed to run csscombManager.runCommand", err);
+            console.error("failed to run csscomb domain", err);
         });
         sortPromise.done(function (css) {
-            console.log("csscomb sortpromise done", css);
-            formattedText = css;
+            console.log("csscomb domain work is done", css);
+            replaceCSS(css);
         });
         return sortPromise;
     }
@@ -74,59 +97,27 @@ define(function (require, exports, module) {
 
         chain(connect, loadDomain);
     });
-
-    function format() {
+    
+    function csscombSort() {
         var editor = EditorManager.getCurrentFullEditor();
         var selectedText = editor.getSelectedText();
-
-        var unformattedText, isSelection = false;
         var selection = editor.getSelection();
+        var cssToSort;
+
+        start = selection.start;
+        end = selection.end;
 
         if (selectedText.length > 0) {
             isSelection = true;
-            unformattedText = selectedText;
+            cssToSort = selectedText;
         } else {
-            unformattedText = DocumentManager.getCurrentDocument().getText();
+            cssToSort = DocumentManager.getCurrentDocument().getText();
         }
         
-        var cursor = editor.getCursorPos();
-        var scroll = editor.getScrollPos();
-
-        var doc = DocumentManager.getCurrentDocument();
-        var language = doc.getLanguage();
-        var fileType = language._id;
-
-//        switch (fileType) {
-
-//        case 'css':
-//        case 'less':
-//            formattedText = _formatCSS(unformattedText);
-//            break;
-
-//        default:
-//            alert('Could not determine file type');
-//        formattedText = _formatCSS(unformattedText);
-//            return;
-//        }
-
-        function replaceCSS() {
-            doc.batchOperation(function () {
-    
-                if (isSelection) {
-                    doc.replaceRange(formattedText, selection.start, selection.end);
-                } else {
-                    doc.setText(formattedText);
-                }
-    
-                editor.setCursorPos(cursor);
-                editor.setScrollPos(scroll.x, scroll.y);
-            });
-        }
-
-        chain(sortCSS(unformattedText), replaceCSS(doc));
+        sortCSS(cssToSort);
     }
 
-    CommandManager.register("CSScomb", COMMAND_ID, format);
+    CommandManager.register("CSScomb", COMMAND_ID, csscombSort);
     var menu = Menus.getMenu(Menus.AppMenuBar.EDIT_MENU);
 
     var windowsCommand = {
