@@ -4,8 +4,8 @@
 (function () {
     "use strict";
     
-    var spawn = require("child_process").spawn;
-    var DOMAIN = "csscomb",
+    var spawn = require("child_process").spawn,
+        DOMAIN = "csscomb",
         RUN_COMMAND = "runCommand";
     
     function runCommand(path, txt, order, cb) {
@@ -34,8 +34,8 @@
     }
     
     exports.init = function (DomainManager) {
-        if (!DomainManager.hasDomain("csscomb")) {
-            DomainManager.registerDomain("csscomb", {major: 0, minor: 1});
+        if (!DomainManager.hasDomain(DOMAIN)) {
+            DomainManager.registerDomain(DOMAIN, {major: 0, minor: 1});
         }
         
         DomainManager.registerCommand(

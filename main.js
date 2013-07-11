@@ -5,22 +5,23 @@ define(function (require, exports, module) {
     "use strict";
 
     var CommandManager  = brackets.getModule("command/CommandManager"),
+        Menus           = brackets.getModule("command/Menus"),
+
         EditorManager   = brackets.getModule("editor/EditorManager"),
+        Editor          = brackets.getModule("editor/Editor").Editor,
 
         AppInit         = brackets.getModule("utils/AppInit"),
         NodeConnection  = brackets.getModule("utils/NodeConnection"),
-        ProjectManager  = brackets.getModule("project/ProjectManager"),
         ExtensionUtils  = brackets.getModule("utils/ExtensionUtils"),
-
-        Editor          = brackets.getModule("editor/Editor").Editor,
+        
         DocumentManager = brackets.getModule("document/DocumentManager"),
-        Menus           = brackets.getModule("command/Menus"),
-        COMMAND_ID = "csscomb.csscomb";
-    
-    var nodeConnection;
-    var sortedCSS;
-    var isSelection = false;
-    var start, end;
+        COMMAND_ID = "csscomb.csscomb",
+        
+        nodeConnection,
+        sortedCSS,
+        start,
+        end,
+        isSelection = false;
 
     // Helper function that chains a series of promise-returning
     // functions together via their done callbacks.
@@ -46,8 +47,8 @@ define(function (require, exports, module) {
 
     // Helper function that loads our domain into the node server
     function loadDomain() {
-        var path = ExtensionUtils.getModulePath(module, "node/CSScombDomain");
-        var loadPromise = nodeConnection.loadDomains([path], true);
+        var path        = ExtensionUtils.getModulePath(module, "node/CSScombDomain"),
+            loadPromise = nodeConnection.loadDomains([path], true);
         loadPromise.fail(function () {
             console.log("failed to load domain");
         });
@@ -58,10 +59,10 @@ define(function (require, exports, module) {
     }
 
     function replaceCSS(css) {
-        var editor = EditorManager.getCurrentFullEditor();
-        var doc = DocumentManager.getCurrentDocument();
-        var cursor = editor.getCursorPos();
-        var scroll = editor.getScrollPos();
+        var editor = EditorManager.getCurrentFullEditor(),
+            doc    = DocumentManager.getCurrentDocument(),
+            cursor = editor.getCursorPos(),
+            scroll = editor.getScrollPos();
 
         doc.batchOperation(function () {
             if (isSelection) {
@@ -76,11 +77,11 @@ define(function (require, exports, module) {
     }
     
     function sortCSS(cssToSort) {
-        var path = ExtensionUtils.getModulePath(module, "csscomb/call_string.php");
-        var order = '_';
-        var sortPromise = nodeConnection.domains.csscomb.runCommand(path, cssToSort, order, function (css) {
-            sortPromise.resolve(css);
-        });
+        var path        = ExtensionUtils.getModulePath(module, "csscomb/call_string.php"),
+            order       = '_',
+            sortPromise = nodeConnection.domains.csscomb.runCommand(path, cssToSort, order, function (css) {
+                sortPromise.resolve(css);
+            });
 
         sortPromise.fail(function (err) {
             console.error("failed to run csscomb domain", err);
@@ -99,10 +100,10 @@ define(function (require, exports, module) {
     });
     
     function csscombSort() {
-        var editor = EditorManager.getCurrentFullEditor();
-        var selectedText = editor.getSelectedText();
-        var selection = editor.getSelection();
-        var cssToSort;
+        var editor       = EditorManager.getCurrentFullEditor(),
+            selectedText = editor.getSelectedText(),
+            selection    = editor.getSelection(),
+            cssToSort;
 
         start = selection.start;
         end = selection.end;
@@ -117,7 +118,7 @@ define(function (require, exports, module) {
         sortCSS(cssToSort);
     }
 
-    CommandManager.register("CSScomb", COMMAND_ID, csscombSort);
+    CommandManager.register("Sort with CSScomb", COMMAND_ID, csscombSort);
     var menu = Menus.getMenu(Menus.AppMenuBar.EDIT_MENU);
 
     var windowsCommand = {
@@ -132,5 +133,4 @@ define(function (require, exports, module) {
 
     var command = [windowsCommand, macCommand];
     menu.addMenuItem(COMMAND_ID, command);
-
 });
