@@ -127,17 +127,6 @@ define(function (require, exports, module) {
 
     CommandManager.register("Sort with CSScomb", COMMAND_ID, csscombSort);
     var menu = Menus.getMenu(Menus.AppMenuBar.EDIT_MENU);
-
-    var windowsCommand = {
-        key: "Ctrl-Shift-C",
-        platform: "win"
-    };
-
-    var macCommand = {
-        key: "Cmd-Shift-C",
-        platform: "mac"
-    };
-
-    var command = [windowsCommand, macCommand];
-    menu.addMenuItem(COMMAND_ID, command);
+    menu.addMenuItem(COMMAND_ID, [{key: "Ctrl-Shift-С", platform: "win"},
+                                  {key: "Ctrl-Shift-С", platform: "mac"}]);
 });
