@@ -3,7 +3,7 @@ brackets-csscomb
 
 Compatible with Sprint 22 and above
 
-Sorts css files with CSScomb
+Sorts css files with csscomb.js
 
 
 Usage

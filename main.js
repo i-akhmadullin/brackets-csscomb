@@ -23,8 +23,6 @@ define(function (require, exports, module) {
         end,
         isSelection = false;
 
-    var settings = JSON.parse(require("text!settings.json"));
-
     // Helper function that chains a series of promise-returning
     // functions together via their done callbacks.
     function chain() {
@@ -51,8 +49,8 @@ define(function (require, exports, module) {
     function loadDomain() {
         var path        = ExtensionUtils.getModulePath(module, "node/CSScombDomain"),
             loadPromise = nodeConnection.loadDomains([path], true);
-        loadPromise.fail(function () {
-            console.log("failed to load domain");
+        loadPromise.fail(function (err) {
+            console.log("failed to load domain: ", err);
         });
         loadPromise.done(function () {
             console.log("csscomb domain successfully loaded");
@@ -79,14 +77,9 @@ define(function (require, exports, module) {
     }
     
     function sortCSS(cssToSort) {
-        var path        = ExtensionUtils.getModulePath(module, "csscomb/call_string.php"),
-            order = ' ';
-
-        if (settings.custom_sort_order) {
-            order = JSON.stringify(settings.sort_order);
-        }
-
-        var sortPromise = nodeConnection.domains.csscomb.runCommand(path, cssToSort, order, function (css) {
+        var config = JSON.parse(require("text!csscomb.json"));
+        var sortPromise = nodeConnection.domains.csscomb.runCommand(cssToSort, config, function (css) {
+            console.log("css: ", css);
             sortPromise.resolve(css);
         });
 

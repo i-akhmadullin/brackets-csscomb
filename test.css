@@ -8,7 +8,7 @@
     border-radius:4px;background:#e7ecee;margin:10px;
 }
 
-/* failed at ~2000rows */
+/* slow but apparently works */
 .test-overflow {
     border-radius:4px;
     background:#e7ecee;

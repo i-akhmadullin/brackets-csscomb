@@ -4,32 +4,22 @@
 (function () {
     "use strict";
     
-    var spawn = require("child_process").spawn,
-        DOMAIN = "csscomb",
-        RUN_COMMAND = "runCommand";
-    
-    function runCommand(path, txt, order, cb) {
+    var spawn       = require("child_process").spawn,
+        Comb        = require("csscomb"),
+        CombConfig  = require("csscomb/config/csscomb.json"),
+        DOMAIN      = "csscomb",
+        RUN_COMMAND = "runCommand",
+        comb        = new Comb();
+
+    function runCommand(css, config, cb) {
         var cb_wtf = arguments[arguments.length - 1];
-        // console.log('cb_wtf', cb_wtf);
+        //{ '0': '.css {...}', '1': null, '2': [Function] }
         console.log('c', arguments);
 
-        var proc   = spawn('php', [path, txt, order]),
-            output = '';
+        comb.configure(config || CombConfig);
+        var combedCSS = comb.processString(css);
 
-        proc.stdout.on('data', function (data) {
-            console.log('stdout: ' + data);
-            output += data;
-        });
-        
-        proc.stderr.on('data', function (data) {
-            console.log('stderr: ' + data);
-        });
-        
-        proc.on('close', function (code) {
-            // console.log('output', output);
-            console.log('child process exited with code ' + code);
-            cb_wtf(undefined, output);
-        });
+        cb_wtf(null, combedCSS);
     }
     
     exports.init = function (DomainManager) {
@@ -42,35 +32,7 @@
             RUN_COMMAND,
             runCommand,
             true,
-            "Runs css through CSScomb cli-sorter.",
-            [
-                {
-                    name: "path",
-                    type: "string",
-                    description: "path to csscomb lib"
-                }
-            ],
-            [
-                {
-                    name: "csstosort",
-                    type: "string",
-                    description: "css to sort"
-                }
-            ],
-            [
-                {
-                    name: "order",
-                    type: "string",
-                    description: "custom sort order"
-                }
-            ],
-            [
-                {
-                    name: "callback",
-                    type: "object",
-                    description: "cb to execute after sorting is over"
-                }
-            ]
+            "Runs css through CSScomb cli-sorter."
         );
     };
 }());
