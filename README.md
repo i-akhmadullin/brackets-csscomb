@@ -1,4 +1,4 @@
-brackets-csscomb
+brackets-[csscomb](https://github.com/csscomb/csscomb.js)
 ============================
 
 Compatible with Sprint 22 and above
