@@ -11,13 +11,13 @@
         RUN_COMMAND = "runCommand",
         comb        = new Comb();
 
-    function runCommand(css, config, cb) {
+    function runCommand(data, cb) {
         var cb_wtf = arguments[arguments.length - 1];
-        //{ '0': '.css {...}', '1': null, '2': [Function] }
+        //{ '0': data, '1': null, '2': [Function] }
         console.log('c', arguments);
 
-        comb.configure(config || CombConfig);
-        var combedCSS = comb.processString(css);
+        comb.configure(data.config || CombConfig);
+        var combedCSS = comb.processString(data.css, data.ext);
 
         cb_wtf(null, combedCSS);
     }

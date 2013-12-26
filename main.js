@@ -77,8 +77,20 @@ define(function (require, exports, module) {
     }
     
     function sortCSS(cssToSort) {
-        var config = JSON.parse(require("text!csscomb.json"));
-        var sortPromise = nodeConnection.domains.csscomb.runCommand(cssToSort, config, function (css) {
+        var config = JSON.parse(require("text!csscomb.json")),
+            doc = DocumentManager.getCurrentDocument(),
+            ext = doc.file.fullPath.split('.').pop().toLowerCase(),
+            supportedExts = ['css', 'scss', 'sass', 'less', 'styl'],
+            sortPromise,
+            data;
+
+        if (supportedExts.indexOf(ext) === -1) {
+            console.log('Unsupported extension', ext);
+            ext = 'css';
+        }
+        
+        data = { css: cssToSort, ext: ext, config: config };
+        sortPromise = nodeConnection.domains.csscomb.runCommand(data, function (css) {
             console.log("css: ", css);
             sortPromise.resolve(css);
         });
