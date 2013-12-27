@@ -4,7 +4,7 @@
         "node_modules/**"
     ],
     "always-semicolon": true,
-    "block-indent": "\t",
+    "block-indent": "",
     "colon-space": [0, 1],
     "color-case": "lower",
     "color-shorthand": true,
@@ -14,7 +14,7 @@
     "leading-zero": false,
     "quotes": "single",
     "remove-empty-rulesets": false,
-    "rule-indent": "\t",
+    "rule-indent": "",
     "stick-brace": 1,
     "strip-spaces": true,
     "unitless-zero": true,
